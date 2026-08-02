@@ -8,7 +8,7 @@ NOCTALIA_REPO="https://github.com/noctalia-dev/noctalia"
 NOCTALIA_SRC="${NOCTALIA_SRC:-$HOME/Develop/noctalia}"
 
 HYPRLAND_REPO="https://github.com/LinuxBeginnings/Ubuntu-Hyprland"
-HYPRLAND_SRC="${HYPRLAND_SRC:-$HOME/Ubuntu-Hyprland}"
+HYPRLAND_SRC="${HYPRLAND_SRC:-$HOME/Develop/Ubuntu-Hyprland}"
 
 link_config() {
     local source="$SCRIPT_DIR/$1"

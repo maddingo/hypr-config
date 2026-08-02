@@ -18,6 +18,6 @@ If `noctalia` is not on `PATH`, it is built next — see `noctalia-install.md`.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `HYPRLAND_SRC` | `~/Ubuntu-Hyprland` | Ubuntu-Hyprland checkout; cloned if absent, reused if present. |
+| `HYPRLAND_SRC` | `~/Develop/Ubuntu-Hyprland` | Ubuntu-Hyprland checkout; cloned if absent, reused if present. |
 | `NOCTALIA_SRC` | `~/Develop/noctalia` | Noctalia checkout to build in; cloned if absent, reused if present. |
 
