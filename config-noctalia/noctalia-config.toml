@@ -1,0 +1,292 @@
+[bar.default]
+center = [ "clock", "notifications" ]
+end = [
+    "media",
+    "tray",
+    "clipboard",
+    "network",
+    "bluetooth",
+    "volume",
+    "brightness",
+    "battery",
+    "control-center",
+    "session"
+]
+start = [ "launcher", "wallpaper", "layouts" ]
+
+[desktop_widgets]
+schema_version = 2
+widget_order = [ "desktop-widget-0000000000000001" ]
+
+    [desktop_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [desktop_widgets.widget.desktop-widget-0000000000000001]
+    box_height = 288.0
+    box_width = 320.0
+    cx = 1376.0
+    cy = 244.0
+    output = "eDP-1"
+    rotation = -0.0
+    type = "clock"
+
+        [desktop_widgets.widget.desktop-widget-0000000000000001.settings]
+        background = true
+        background_opacity = 0.28000000000000003
+        center_text = true
+        clock_style = "analog"
+
+[hooks]
+session_locked = "sh -c 'sleep 0.3 && noctalia msg dpms-off'"
+session_unlocked = "noctalia msg dpms-on"
+
+[idle.behavior.screen-off]
+action = "screen_off"
+enabled = true
+timeout = 60
+
+[location]
+address = "Stavanger, Norway"
+
+[lockscreen_widgets]
+enabled = false
+schema_version = 2
+widget_order = [ "lockscreen-login-box@eDP-1" ]
+
+    [lockscreen_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@eDP-1"]
+    box_height = 196.0
+    box_width = 810.0
+    cx = 800.0
+    cy = 818.0
+    output = "eDP-1"
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@eDP-1".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+[plugins]
+enabled = [ "maddingo/hyprland-layout" ]
+
+    [[plugins.source]]
+    kind = "git"
+    location = "https://github.com/noctalia-dev/official-plugins"
+    name = "official"
+
+    [[plugins.source]]
+    kind = "git"
+    location = "https://github.com/noctalia-dev/community-plugins"
+    name = "community"
+
+[shell]
+avatar_path = "/var/lib/AccountsService/icons/martin"
+
+[theme]
+builtin = "Nord"
+community_palette = "Kemuri Susu"
+mode = "dark"
+source = "wallpaper"
+wallpaper_scheme = "soft"
+
+[wallpaper.automation]
+enabled = true
+interval_seconds = 3600
+order = "random"
+recursive = true
+
+[wallpaper.default]
+path = "/home/martin/Pictures/Wallpapers/2023/09/IMG-20230908-WA0004.jpg"
+
+[wallpaper.last]
+path = "/home/martin/Pictures/Wallpapers/2023/09/IMG-20230908-WA0004.jpg"
+
+[wallpaper.monitors.eDP-1]
+path = "/home/martin/Pictures/Wallpapers/2023/09/IMG-20230908-WA0004.jpg"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2024/07/20240720_141752.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2024/07/Camera/20240722_092711.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2024/08/Camera/20240814_160440.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2025/01/20250111_132656.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2024/08/Camera/20240804_154444.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2024/10/20241004_092613~2.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2025/01/20250111_133033.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2025/01/20250111_133415.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2025/01/20250111_133513.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2025/01/20250111_134545.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2025/01/20250111_141126.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2010/04/dubrovnik_sony_alpha.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2013/08/forest_wpo(1).jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2016/10/DSC_0643.JPG"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2017/11/_20171110_152757.JPG"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/20260508_120551.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2016/10/IMAG0464.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2018/01/IMG-20180124-WA0000.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2022/08/IMG-20220816-WA0001.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2023/08/IMG-20230801-WA0005.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2023/09/IMG-20230908-WA0004.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2023/11/IMG-20231108-WA0006.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2023/11/IMG-20231108-WA0008.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2023/07/IMG-20230717-WA0003.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2023/11/IMG-20231108-WA0013.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2023/09/IMG-20230908-WA0000.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/2008/08/upon_a_time.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "soft"
+
+[widget.launcher]
+glyph = "grid-dots"
+
+[widget.layouts]
+type = "maddingo/hyprland-layout:toggle"
