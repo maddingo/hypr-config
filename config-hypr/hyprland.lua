@@ -56,6 +56,7 @@ hl.on("hyprland.start", function ()
    hl.exec_cmd("nextcloud")
    hl.exec_cmd("/usr/lib/x86_64-linux-gnu/libexec/polkit-kde-authentication-agent-1")
    hl.exec_cmd("/home/martin/opt/jetbrains-toolbox-3.3.1.75249/bin/jetbrains-toolbox.desktop")
+   hl.exec_cmd("gnome-keyring-daemon")
 end)
 
 
