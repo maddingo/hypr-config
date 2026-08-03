@@ -10,9 +10,39 @@ NOCTALIA_SRC="${NOCTALIA_SRC:-$HOME/Develop/noctalia}"
 HYPRLAND_REPO="https://github.com/LinuxBeginnings/Ubuntu-Hyprland"
 HYPRLAND_SRC="${HYPRLAND_SRC:-$HOME/Develop/Ubuntu-Hyprland}"
 
+# Hyprland resolves its config path once at startup — lua if
+# ~/.config/hypr/hyprland.lua exists, otherwise the legacy hyprland.conf — and
+# does not revisit that choice on reload. Replacing ~/.config/hypr under a live
+# session makes it re-read whichever path it already latched onto; if the
+# incoming tree has no file there, Hyprland writes a stub config to it and runs
+# off that. The stub lands inside this repo, through the very symlink being
+# created. Observed 2026-08-02: the session dropped to 6 keybinds and unset gaps.
+assert_no_live_hyprland() {
+    [ -n "${HYPR_ALLOW_LIVE_RELINK:-}" ] && return 0
+    pgrep -x Hyprland >/dev/null 2>&1 || return 0
+
+    cat >&2 <<EOF
+Refusing to relink ~/.config/hypr: Hyprland is running (pid $(pgrep -x Hyprland | tr '\n' ' ')).
+
+Swapping the config directory under a live compositor makes it autogenerate a
+stub config into this repo and run off that. Pick one:
+
+  * switch to a TTY (Ctrl+Alt+F3), log out of Hyprland, and rerun there
+  * run this before starting a Hyprland session
+  * HYPR_ALLOW_LIVE_RELINK=1 $0
+    (accepts the stub; you have to log out and back in either way)
+
+Nothing has been changed.
+EOF
+    exit 1
+}
+
 link_config() {
     local source="$SCRIPT_DIR/$1"
     local target="$HOME/.config/$2"
+
+    # Enforced here as well as up front, so the function stays safe if reused.
+    [ "$2" = "hypr" ] && assert_no_live_hyprland
 
     if [ -L "$target" ]; then
         echo "Removing existing symlink $target"
@@ -62,6 +92,10 @@ install_noctalia() {
     cp "$SCRIPT_DIR/install-noctalia.sh" "$NOCTALIA_SRC/"
     "$NOCTALIA_SRC/install-noctalia.sh" --install
 }
+
+# Checked before anything else: link_config enforces it too, but only at the very
+# end, and the Noctalia build in between can take half an hour.
+assert_no_live_hyprland
 
 if command -v Hyprland >/dev/null; then
     echo "Hyprland already installed, skipping"

@@ -52,7 +52,7 @@ local menu = "rofi -show run"
 hl.on("hyprland.start", function () 
 --   hl.exec_cmd(terminal)
 --   hl.exec_cmd("nm-applet")
-   hl.exec_cmd("noctalia")
+   hl.exec_cmd("~/.local/bin/noctalia")
    hl.exec_cmd("nextcloud")
    hl.exec_cmd("/usr/lib/x86_64-linux-gnu/libexec/polkit-kde-authentication-agent-1")
    hl.exec_cmd("/home/martin/opt/jetbrains-toolbox-3.3.1.75249/bin/jetbrains-toolbox.desktop")

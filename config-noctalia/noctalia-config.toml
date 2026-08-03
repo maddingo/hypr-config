@@ -98,6 +98,12 @@ enabled = [ "maddingo/hyprland-layout" ]
     location = "https://github.com/noctalia-dev/community-plugins"
     name = "community"
 
+    [[plugins.source]]
+    kind = "git"
+    location = "https://github.com/maddingo/noctalia-plugins"
+    name = "maddin"
+
+
 [shell]
 avatar_path = "/var/lib/AccountsService/icons/martin"
 
