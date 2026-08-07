@@ -68,6 +68,12 @@ end)
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
 
+-- ~/.local/bin isn't on the PATH Hyprland inherits from start-hyprland
+local localBin = os.getenv("HOME") .. "/.local/bin"
+local path = os.getenv("PATH") or ""
+if not path:match("^" .. localBin .. ":") then
+  hl.env("PATH", localBin .. ":" .. path)
+end
 
 -----------------------
 ----- PERMISSIONS -----
