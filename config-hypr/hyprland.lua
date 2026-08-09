@@ -22,11 +22,30 @@
 ------------------
 
 -- See https://wiki.hypr.land/Configuring/Basics/Monitors/
+
+-- Fallback for any output not listed below.
 hl.monitor({
     output   = "",
     mode     = "preferred",
     position = "auto",
     scale    = "auto",
+})
+
+-- External BenQ GL2250H on the left.
+hl.monitor({
+    output   = "HDMI-A-1",
+    mode     = "1920x1080@60",
+    position = "0x0",
+    scale    = 1,
+})
+
+-- Laptop panel on the right. Scale 1.6 makes 2560x1600 a 1600x1000 logical
+-- area, so it starts where the BenQ ends at x=1920.
+hl.monitor({
+    output   = "eDP-1",
+    mode     = "preferred",
+    position = "1920x0",
+    scale    = 1.6,
 })
 
 
@@ -35,7 +54,7 @@ hl.monitor({
 ---------------------
 
 -- Set programs that you use
-local terminal    = "kitty"
+local terminal    = "alacritty"
 local fileManager = "thunar"
 local menu = "rofi -show run"
 
