@@ -10,24 +10,6 @@ NOCTALIA_SRC="${NOCTALIA_SRC:-$HOME/Develop/noctalia}"
 HYPRLAND_REPO="https://github.com/LinuxBeginnings/Ubuntu-Hyprland"
 HYPRLAND_SRC="${HYPRLAND_SRC:-$HOME/Develop/Ubuntu-Hyprland}"
 
-link_config() {
-    local source="$SCRIPT_DIR/$1"
-    local target="$HOME/.config/$2"
-
-    if [ -L "$target" ]; then
-        echo "Removing existing symlink $target"
-        rm "$target"
-    elif [ -e "$target" ]; then
-        local backup="$target.backup-$(date +%Y%m%d-%H%M%S)"
-        echo "Existing $target found, moving to $backup"
-        mv "$target" "$backup"
-    fi
-
-    mkdir -p "$(dirname "$target")"
-    ln -s "$source" "$target"
-    echo "Linked $source -> $target"
-}
-
 # Stock Ubuntu 24.04 says ID=ubuntu; derivatives (TUXEDO OS) say otherwise but
 # still set UBUNTU_CODENAME, so key on that.
 is_ubuntu_2404() {
@@ -63,6 +45,12 @@ install_noctalia() {
     "$NOCTALIA_SRC/install-noctalia.sh" --install
 }
 
+# Linking first, before the long builds: neither installer writes to
+# ~/.config/hypr or ~/.config/noctalia (upstream's dotfiles copy is what would,
+# and hyprland-preset.sh sets dots="N"). It also refuses to run under a live
+# Hyprland session, which is the check worth hitting before anything is built.
+"$SCRIPT_DIR/link-config.sh"
+
 if command -v Hyprland >/dev/null; then
     echo "Hyprland already installed, skipping"
 elif ! is_ubuntu_2404; then
@@ -81,6 +69,3 @@ if ! command -v noctalia >/dev/null; then
     echo "noctalia not found, building it (this takes a while, and apt needs sudo)"
     install_noctalia
 fi
-
-link_config config-hypr hypr
-link_config config-noctalia noctalia
