@@ -7,10 +7,21 @@ git clone https://github.com/maddingo/hypr-config ~/.hypr-config
 ~/.hypr-config/install.sh
 ```
 
-Symlinks `config-hypr` to `~/.config/hypr` and `config-noctalia` to `~/.config/noctalia`. An existing directory at either target is backed up as `<name>.backup-<timestamp>`.
+Run it from a TTY (`Ctrl+Alt+F3`), not from inside a Hyprland session — a running
+Hyprland re-creates a stock `~/.config/hypr/hyprland.lua` and the symlink is lost.
+Both scripts detect a running Hyprland and refuse with instructions.
 
-If `Hyprland` is not on `PATH` and this is an Ubuntu 24.04 base, it is installed
-first via [Ubuntu-Hyprland](https://github.com/LinuxBeginnings/Ubuntu-Hyprland),
+`link-config.sh` does the symlinking and can be run on its own to re-link without
+touching the installs:
+
+```sh
+~/.hypr-config/link-config.sh
+```
+
+It symlinks `config-hypr` to `~/.config/hypr` and `config-noctalia` to `~/.config/noctalia`. An existing directory at either target is backed up as `<name>.backup-<timestamp>`. `install.sh` runs it first, before the long builds.
+
+If `Hyprland` is not on `PATH` and this is an Ubuntu 24.04 base, it is then
+installed via [Ubuntu-Hyprland](https://github.com/LinuxBeginnings/Ubuntu-Hyprland),
 driven by `hyprland-preset.sh` so its own dotfiles are skipped in favour of this
 repo's. That step needs sudo and still asks a few questions.
 
