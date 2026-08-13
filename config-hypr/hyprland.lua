@@ -397,6 +397,67 @@ hl.window_rule({
 -- })
 -- overlayLayerRule:set_enabled(false)
 
+-- JetBrains Toolbox anchors its window to where it thinks the tray icon is.
+-- Under XWayland it gets that wrong and asks for x = -440, off the left edge of
+-- the whole layout, so the window maps invisibly on whatever workspace the
+-- leftmost monitor happens to be showing, and looks like it never opened.
+hl.window_rule({
+    name  = "jetbrains-toolbox",
+    match = { class = "^jetbrains-toolbox$" },
+
+    float = true,
+})
+
+-- Place that window under the cursor, on the monitor whose tray icon was
+-- clicked. A `move` rule can't express this: the Lua bridge takes plain
+-- coordinates only, with no cursor or onscreen keyword, so a fixed position
+-- would be wrong on whichever monitor you didn't click.
+local function place_toolbox_at_cursor(win)
+    local mon    = hl.get_monitor_at_cursor() or hl.get_active_monitor()
+    local cursor = hl.get_cursor_pos()
+    if not mon or not cursor then return nil end
+
+    local function clamp(v, lo, hi)
+        if hi < lo then return lo end
+        return math.max(lo, math.min(v, hi))
+    end
+
+    -- Monitor width/height are physical pixels, window coordinates are logical.
+    local margin = 10
+    local mon_w  = mon.width / mon.scale
+    local mon_h  = mon.height / mon.scale
+
+    local x = math.floor(clamp(cursor.x - win.size.x / 2, mon.x + margin, mon.x + mon_w - win.size.x - margin))
+    local y = math.floor(clamp(cursor.y + margin,         mon.y + margin, mon.y + mon_h - win.size.y - margin))
+
+    hl.dispatch(hl.dsp.window.move({ window = win, workspace = mon.active_workspace.id }))
+    hl.dispatch(hl.dsp.window.move({ window = win, x = x, y = y }))
+
+    return { x = x, y = y }
+end
+
+hl.on("window.open", function(win)
+    if win.class ~= "jetbrains-toolbox" then return end
+
+    local target = place_toolbox_at_cursor(win)
+    if not target then return end
+
+    -- Placing it once is not enough: Toolbox re-asserts its own off-screen
+    -- position a moment after the window maps, so hold it in place briefly.
+    -- Dragging the window yourself within that second will be undone too.
+    local ticks = 0
+    local timer
+    timer = hl.timer(function()
+        ticks = ticks + 1
+        local ok = pcall(function()
+            if win.mapped and (win.at.x ~= target.x or win.at.y ~= target.y) then
+                hl.dispatch(hl.dsp.window.move({ window = win, x = target.x, y = target.y }))
+            end
+        end)
+        if not ok or ticks >= 12 then timer:set_enabled(false) end
+    end, { timeout = 100, type = "repeat" })
+end)
+
 -- Hyprland-run windowrule
 hl.window_rule({
     name  = "move-hyprland-run",
