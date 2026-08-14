@@ -1,6 +1,9 @@
 .envrc
 config-hypr/.initial_startup_done
 config-hypr/wallpaper_effects/.wallpaper*
+config-hypr/wallpaper_effects/.wallpaper_*
+config-hypr/wallust/wallust-hyprland.conf
+config-waybar/wallust/colors-waybar.css
 
 # these are links
 config-waybar/config
