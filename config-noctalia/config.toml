@@ -1,0 +1,169 @@
+[bar.default]
+center = [ "clock", "notifications", "power_profile", "wallhaven" ]
+end = [
+    "media",
+    "tray",
+    "clipboard",
+    "network",
+    "bluetooth",
+    "volume",
+    "brightness",
+    "recorder",
+    "widget",
+    "battery",
+    "control-center",
+    "bar",
+    "session"
+]
+start = [ "launcher", "wallpaper", "toggle", "workspaces", "spacer_2", "active_window" ]
+
+[desktop_widgets]
+schema_version = 2
+widget_order = []
+
+    [desktop_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [desktop_widgets.widget]
+
+[dock]
+launcher_position = "start"
+show_dots = true
+
+[location]
+address = "Randaberg, Norway"
+
+[lockscreen_widgets]
+enabled = false
+schema_version = 2
+widget_order = [ "lockscreen-login-box@eDP-1" ]
+
+    [lockscreen_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@eDP-1"]
+    box_height = 70.0
+    box_width = 400.0
+    cx = 640.0
+    cy = 601.0
+    output = "eDP-1"
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@eDP-1".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+
+[plugin_settings."blackbartblues/keymap"]
+compositor = "hyprland"
+hyprland_config = "/home/martin/.config/hypr/hyprland.lua"
+
+[plugins]
+enabled = [
+    "noctalia/screen_recorder",
+    "blackbartblues/keymap",
+    "maddingo/hypr-layout-switcher",
+    "noctalia/wallhaven",
+    "icefish/phone-connect"
+]
+
+[shell]
+avatar_path = "/home/martin/Pictures/kopf_nobg.png"
+
+    [shell.panel]
+    transparency_mode = "glass"
+
+[theme]
+builtin = "Ayu"
+community_palette = "Catppuccin Frappe Blue"
+source = "wallpaper"
+wallpaper_scheme = "soft"
+
+    [theme.templates]
+    builtin_ids = [ "alacritty", "hyprland" ]
+    community_ids = [ "neovim" ]
+
+[wallpaper.default]
+path = "/home/martin/Pictures/Wallpapers/wallhaven-lyq5or.jpg"
+
+[wallpaper.last]
+path = "/home/martin/Pictures/Wallpapers/wallhaven-lyq5or.jpg"
+
+[wallpaper.monitors.eDP-1]
+path = "/home/martin/Pictures/Wallpapers/wallhaven-lyq5or.jpg"
+
+[[wallpaper.favorite]]
+palette_source = "wallpaper"
+path = "/home/martin/Pictures/Wallpapers/wallhaven_nkmqr1.jpg"
+theme_mode = "dark"
+wallpaper_scheme = "m3-content"
+
+[[wallpaper.favorite]]
+path = "/home/martin/Pictures/Wallpapers/wallhaven_4ldvyq.jpg"
+theme_mode = "auto"
+
+[[wallpaper.favorite]]
+path = "/home/martin/Pictures/Wallpapers/wallhaven_o559gl.jpg"
+theme_mode = "auto"
+
+[[wallpaper.favorite]]
+builtin_palette = "Ayu"
+palette_source = "builtin"
+path = "/home/martin/Pictures/Wallpapers/wallhaven-3lmqyd.jpg"
+theme_mode = "dark"
+
+[[wallpaper.favorite]]
+path = "/home/martin/Pictures/Wallpapers/wallhaven-0wz8g6.jpg"
+theme_mode = "auto"
+
+[widget.bar]
+type = "icefish/phone-connect:bar"
+
+[widget.bluetooth]
+enabled = false
+
+[widget.brightness]
+enabled = false
+
+[widget.clipboard]
+enabled = false
+
+[widget.launcher]
+glyph = "grid-dots"
+
+[widget.media]
+enabled = false
+
+[widget.network]
+show_label = false
+
+[widget.recorder]
+type = "noctalia/screen_recorder:recorder"
+
+    [widget.recorder.actions]
+    left = "screenshot-region"
+    middle = "screenshot-fullscreen pick"
+
+[widget.spacer_2]
+type = "spacer"
+
+[widget.toggle]
+type = "maddingo/hypr-layout-switcher:toggle"
+
+[widget.wallhaven]
+type = "noctalia/wallhaven:wallhaven"
+
+[widget.widget]
+enabled = false
+type = "blackbartblues/keymap:widget"
