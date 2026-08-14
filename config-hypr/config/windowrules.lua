@@ -70,6 +70,28 @@ hl.window_rule({
 --]]
 hl.window_rule({ match = { class = "^(org.kde.dolphin)$" }, float = true, center = true, size = "1200 600" })
 
+-- Toolbox snaps itself to where it thinks the tray icon is shortly after
+-- opening, which lands it under the noctalia bar. windowrule move/size can't
+-- win that race, so wait for it to settle, then pin it just below the bar
+-- via dispatch (compositor-level move, which the app can't override back).
+hl.on("window.open", function(win)
+    if win.class ~= "jetbrains-toolbox" then return end
+    hl.timer(function()
+        local mon = win.monitor
+        if not mon then return end
+
+        local bar_bottom = 0
+        for _, layer in ipairs(hl.get_layers({ namespace = "noctalia-bar-default" })) do
+            bar_bottom = math.max(bar_bottom, layer.y + layer.h)
+        end
+
+        local x = (mon.width / mon.scale) - win.size.x - 10
+        local y = bar_bottom + 8
+
+        hl.dispatch(hl.dsp.window.move({ x = x, y = y, window = "address:" .. win.address }))
+    end, { timeout = 700, type = "oneshot" })
+end)
+
 -- Opacity Overrides
 local terminals = "^(kitty|ghostty|[Kk]onsole|Alacritty|gnome-terminal|xfce[0-9]?-terminal)$"
 
