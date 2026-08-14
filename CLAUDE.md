@@ -69,6 +69,15 @@ Established by testing on this machine:
 - A Wayland toplevel cannot position itself, so any window forced to `float` gets
   Hyprland's default placement — **dead centre of the monitor** — unless a `move` rule
   overrides it.
+- **XWayland windows are the exception, and they win.** X11 clients *can* position and
+  size themselves, and their hints are applied *after* window rules. A window that sets
+  `user specified location` in `WM_NORMAL_HINTS` (USPosition) silently defeats `move` and
+  `center`; one whose min size equals its max size silently defeats `size`. The rule still
+  matches — `workspace N` on the same selector works fine — so this looks exactly like a
+  non-matching selector. Check with `xprop -id <id> WM_NORMAL_HINTS` (get the id from
+  `xwininfo -root -tree`) before blaming the matcher, and fix such windows with a post-map
+  `hyprctl dispatch movewindowpixel exact X Y,address:0x…` instead. Unlike rule `move`,
+  `movewindowpixel exact` takes **global** coordinates.
 
 ## Debugging window behaviour: read the event socket, don't read rules
 
@@ -102,6 +111,33 @@ Two distinct bugs came from this:
 The tooltip rule's `match:class ^$, match:title ^$` selector is deliberately isolated on one
 line, because it matches *any* empty-class/empty-title toplevel, not just Edge's.
 
+## Known: JetBrains Toolbox places its popup off-screen
+
+The Toolbox popup (`class jetbrains-toolbox`, XWayland, fixed 440x700) positions itself where
+it believes its system-tray icon is. There is no tray for it to find here, so it uses a stale
+guess — observed both at the top-right of eDP-1 and at global **x=-806**, i.e. off-screen to
+the left of eDP-1. It sets the USPosition hint, which is why `float on, center on` in
+`configs/WindowRules.conf:262` has never actually centred it, and why no `move` rule can
+(see the XWayland note under windowrule syntax).
+
+Fixed by `UserScripts/JetBrainsToolboxAtCursor.sh --listener`, an `exec-once` from
+`UserConfigs/Startup_Apps.conf`. It watches the event socket for
+`openwindow>>…,jetbrains-toolbox,…` and re-places the window at the pointer, clamped to the
+usable area of the monitor under the pointer. Two non-obvious details:
+
+- The offsets are **negative** (pointer ends up *inside* the popup). With a positive offset
+  the popup sits beside the pointer and, under `follow_mouse = 1`, the first pixel of pointer
+  drift hands focus back to the window underneath — Toolbox visible but ignoring keystrokes.
+  It does not self-focus on open, so the script focuses it explicitly.
+- `movewindowpixel` does not reassign the workspace, so when the pointer is on a different
+  monitor than the one Toolbox opened on the script issues `movetoworkspacesilent` first;
+  otherwise the window keeps a workspace belonging to the other monitor and gets clipped.
+
+The fix deliberately depends on nothing outside this repo. Super+Shift+J launches
+`$HOME/opt/jetbrains-toolbox/bin/jetbrains-toolbox` directly; the old `~/bin/toolbox`
+wrapper, which did its own `sleep 0.4; centerwindow` and raced the listener, is no longer
+referenced by the config.
+
 ## Gotchas when running diagnostics here
 
 - **`pkill -f` is dangerous in this environment.** The Claude Bash shell's own command line
@@ -112,6 +148,9 @@ line, because it matches *any* empty-class/empty-title toplevel, not just Edge's
   (it drives per-window keyboard layout). Don't kill it when cleaning up diagnostic socats.
   It self-heals on the next Shift_L+Alt_L press, or restart manually:
   `setsid nohup bash config-hypr/scripts/Tak0-Per-Window-Switch.sh --listener &`
+- `UserScripts/JetBrainsToolboxAtCursor.sh --listener` holds a second `socat` on the same
+  socket. Same warning; restart it with `~/.config/hypr/UserScripts/JetBrainsToolboxAtCursor.sh`
+  (no args — that mode only ensures a listener is running).
 - `scripts/LuaAutoReload.sh` runs `hyprctl reload` whenever any `*.lua` under the config
   tree changes.
 - `hyprctl reload` discards all dynamic `hyprctl keyword` rules. Useful for testing: apply
