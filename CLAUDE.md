@@ -29,6 +29,10 @@ description option — its flags are just `-m`, `-n`, `-v`), so it silently rein
 bug and wipes the comments. To change geometry, edit the two files by hand. If it gets run
 by accident: `git checkout config-hypr/monitors.conf config-hypr/workspaces.conf`.
 
+This design has since been validated against a *physical* port change, not just a reboot:
+on 2026-08-17 the dock was moved to a different USB-C port and the layout came up correct
+with zero intervention. See "Display problems" below for why the names drift at all.
+
 ## Update-safe vs. not
 
 - `config-hypr/configs/*.conf` — upstream KooL defaults. **Overwritten by dotfiles updates.**
@@ -91,6 +95,90 @@ socat -u UNIX-CONNECT:/run/user/$UID/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.
 Timestamp each line. `openwindow>>ADDR,WORKSPACE,CLASS,TITLE` and the `fullscreen>>0|1`
 transitions expose causal chains that are invisible in the config. This is the only reason
 the Edge issue below was found; reading window rules led to two wrong conclusions first.
+
+## Display problems: both externals share one MST link
+
+The two externals are **not two cables**. They hang off a single physical DisplayPort
+connector through an MST hub, and `DP-9` / `DP-12` are *virtual* outputs on it:
+
+    [drm] DM_MST: DP12, 4-lane link detected
+
+**Any symptom that hits both externals at once and spares `eDP-1` is the shared link or the
+hub — not per-monitor config, and not Hyprland.** The compositor has no mechanism to blank
+two outputs and leave the third alone. This is also why the connector names drift (see
+Layout above): they are MST port numbers, not physical ports.
+
+`hyprctl monitors` will not tell you which physical connector the hub is on. The kernel
+does, via the `aconnector` id in the `DM_MST` lines — a *changed* id means a genuinely
+different GPU connector, not merely re-enumeration.
+
+### Two root-free tests that settle it fast
+
+debugfs is unavailable here (see dead ends below), so these are the tools you actually have.
+
+**Is it bandwidth?** Drop both externals to 1080p60 dynamically and watch:
+
+```sh
+hyprctl keyword monitor "desc:Lenovo Group Limited P27h-20 V906YWA0,1920x1080@60,2194x0,1"
+hyprctl keyword monitor "desc:Lenovo Group Limited P27h-20 V907BZ2P,1920x1080@60,4754x0,1"
+hyprctl reload   # reverts -- dynamic keyword rules never survive a reload
+```
+
+At 8-bit (`currentFormat=XRGB8888`) 2x 1440p60 needs ~13 Gbit/s, 2x 1080p60 about ~7.4:
+
+| 4-lane link rate | Usable | Fits 2x 1440p60? |
+|---|---|---|
+| HBR2 (5.4 G/lane) | ~17.3 Gbit/s | yes |
+| HBR (2.7 G/lane) | ~8.6 Gbit/s | **no** |
+| RBR (1.62 G/lane) | ~5.2 Gbit/s | no |
+
+A link that trained down to HBR therefore presents as exactly "both screens misbehave at
+1440p, fine at 1080p". If 1080p changes nothing, bandwidth is falsified — stop pursuing it.
+
+**Is Hyprland involved at all?** Diff the line count of the log over ~45s while the symptom
+is occurring:
+
+```sh
+LOG=/run/user/$UID/hypr/$HYPRLAND_INSTANCE_SIGNATURE/hyprland.log; wc -l < "$LOG"
+```
+
+That log records individual cursor-buffer imports and libinput debounce transitions. If it
+writes **zero lines** across a dozen visible glitches, the compositor is definitively not
+involved and you can stop reading config entirely. For display-layer problems this is
+faster and more conclusive than the event socket.
+
+### Dead ends, written down so they are not retried
+
+- **debugfs is blocked by kernel lockdown** (Secure Boot). `sudo cat
+  /sys/kernel/debug/dri/*/DP-*/link_settings` fails *silently* and logs
+  `Lockdown: cat: debugfs access is restricted` to dmesg. The negotiated DP link rate is
+  simply not readable without `drm.debug=0x4` on the kernel cmdline plus a reboot.
+- Since kernel ~6.10 the DRI debugfs directories are named by PCI device
+  (`/sys/kernel/debug/dri/0000:c3:00.0/`), not by minor number (`dri/1`), so older
+  instructions found online are wrong here twice over.
+- **amdgpu does not log successful DP link retrains at the default loglevel.** Silence in
+  dmesg is *not* evidence that the link is healthy.
+
+### Incident 2026-08-17: both externals blinking black
+
+Every few seconds, starting the moment the machine was re-docked. Bandwidth was falsified
+(unchanged at 1080p); Hyprland logged nothing across ~15 blinks; VRR, PSR and 10-bit were
+all already off. The cause was physical — the DP path through USB-C port `USBC000:001`
+(aconnector 122). Moving the dock to `USBC000:002` (aconnector 115) fixed it with every
+other variable held constant:
+
+    10:32:58  DM_MST: stopping TM on aconnector: ... [id: 122]   <- old port
+    10:33:04  DM_MST: starting TM on aconnector: ... [id: 115]   <- new port
+
+Still open: whether port 001 or that cable end is the faulty one. Plug a *different* cable
+into 001 to find out — blinking returns means the port is bad, clean means the cable is.
+
+Leave a kernel capture running across any such experiment. It is the only channel that
+records the transition:
+
+```sh
+journalctl -kf -o short-precise | grep -iE 'drm|mst|link|ucsi'
+```
 
 ## Known: Edge renders tooltips as toplevel windows
 
@@ -158,3 +246,13 @@ referenced by the config.
 - `HYPRLAND_INSTANCE_SIGNATURE` changes when Hyprland restarts. If long-running listeners
   suddenly stop working, check whether the signature moved rather than assuming a config
   regression.
+- **`systemctl --user disable` does not necessarily stick.** Some units are enabled in
+  *global* scope by their Debian package via `/etc/systemd/user/*.wants/`, so a user-scope
+  disable stops the unit but it returns at next login (systemd says so, in a message that
+  is easy to skim past). Mask instead — `systemctl --user mask X` is user-scope, needs no
+  root, and survives package upgrades, which `sudo systemctl --global disable` does not.
+- `hyprpaper.service` is **masked** for this reason. It shipped globally enabled and ran
+  alongside `swww-daemon`, which is the actual wallpaper daemon here (started by
+  `scripts/DarkLight.sh` via `ApplyThemeMode.sh`). hyprpaper held no layer surfaces, so it
+  was harmless — but two wallpaper daemons is a convincing red herring in a display
+  investigation. Check `hyprctl layers` before blaming either.
