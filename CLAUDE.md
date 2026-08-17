@@ -226,6 +226,55 @@ The fix deliberately depends on nothing outside this repo. Super+Shift+J launche
 wrapper, which did its own `sleep 0.4; centerwindow` and raced the listener, is no longer
 referenced by the config.
 
+## Known: IntelliJ menus land off-screen after a dock/undock
+
+**Different problem from the Toolbox one above, despite both being JetBrains.** Do not
+reach for the same tools.
+
+The IDE runs as a **native Wayland** client — `hyprctl clients` reports `xwayland=false` —
+because the bundled `bin/idea64.vmoptions` sets `-Dawt.toolkit.name=auto` and the JetBrains
+Runtime then selects its Wayland AWT toolkit (WLToolkit).
+
+That toolkit **caches `wl_output` geometry and does not reliably refresh it** when outputs
+are removed and re-added; `wl_output:geometry` is not always re-sent. Popups are then
+positioned against monitor origins that no longer exist. With origins here at x=274 / x=2194
+/ x=4754, a stale origin throws a submenu thousands of pixels sideways — the symptom is
+"opening the Git menu shows the submenu far off to the right". Upstream: JBR-9364.
+
+**Fix: restart the IDE.** There is nothing to configure. The rule to remember:
+
+> After any dock, undock, or USB-C port change, restart IntelliJ.
+
+This recurs by nature on a laptop, and it presents as an IDE bug rather than a display one,
+which is what makes it confusing.
+
+**The diagnostic that identifies it** is to compare the IDE's start time against the display
+topology changes — if the IDE predates them, it is holding stale geometry:
+
+```sh
+ps -o pid,lstart,etime -p $(pgrep -f 'Toolbox/apps/intellij-idea/bin/idea')
+journalctl -k --since today | grep DM_MST     # the output add/remove events
+```
+
+Two traps found while diagnosing this:
+
+- **`~/.config/JetBrains/IntelliJIdea<ver>/idea64.vmoptions` always has a fresh mtime.**
+  Toolbox rewrites its notification-token lines on every IDE launch. It looks like a recent
+  user edit and is not one. This wasted time on 2026-08-17.
+- **The JetBrains native launcher loads libjvm in-process**, so `bin/idea` *is* the JVM. VM
+  flags do not appear in `/proc/<pid>/cmdline` — read the vmoptions files instead.
+
+If a future case is *not* fixed by a restart, it is the deeper WLToolkit positioning bug
+(JBR-6920, and IJPL-61714 which is Hyprland-specific) rather than stale state. The
+workaround then is to opt out of Wayland by adding to the **user** vmoptions:
+
+    -Dawt.toolkit.name=XToolkit
+
+All three monitors here are `scale=1`, so the usual fractional-scaling blurriness cost of
+XWayland does not apply. But that would move IntelliJ into the XWayland window class, at
+which point the `WM_NORMAL_HINTS` / USPosition caveats documented above start applying to
+it too.
+
 ## Gotchas when running diagnostics here
 
 - **`pkill -f` is dangerous in this environment.** The Claude Bash shell's own command line
