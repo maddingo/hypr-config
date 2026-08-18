@@ -42,6 +42,7 @@
         "tray",
 	"custom/separator#blank",
 	"group/audio",
+	"group/laptop",
 	"custom/separator#blank",
 	"custom/power",
 	],
