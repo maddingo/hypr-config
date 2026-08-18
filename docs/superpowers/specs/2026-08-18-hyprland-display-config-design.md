@@ -1,4 +1,4 @@
-# Noctalia plugin: `maddingo/workspace-monitor`
+# Noctalia plugin: `maddingo/hyprland-display-config`
 
 ## Purpose
 
@@ -67,11 +67,11 @@ Out of scope:
 
 ## Plugin structure
 
-New repo at `~/Develop/noctalia-workspace-monitor`, plugin id
-`maddingo/workspace-monitor`:
+New repo at `~/Develop/hyprland-display-config`, plugin id
+`maddingo/hyprland-display-config`:
 
 ```
-noctalia-workspace-monitor/
+hyprland-display-config/
   plugin.toml           -- id, plugin_api, dependencies=["hyprland"],
                             [[setting]] hyprland_config, workspace_count
   panel.luau             -- card UI, drag sources/drop zones, edit controls
@@ -148,7 +148,7 @@ two-step sequence:
 
    `[[setting]]` fields (matching keymap's `hyprland_config` pattern):
    - `hyprland_config` (type `file`, default `~/.config/hypr/hyprland.lua`) —
-     where the plugin ensures a `require("workspace-monitor")` include line
+     where the plugin ensures a `require("hyprland-display-config")` include line
      exists (inserted once, idempotently, if absent).
    - `workspace_count` (type `int`, default `10`, min 1, max 36).
 
@@ -169,12 +169,12 @@ two-step sequence:
   confirmed working on this machine. Used to exercise reordering and
   chip-binding across 2-3 monitors without physical hardware.
 - **Local dev loop**: register the repo as a source —
-  `noctalia msg plugins source add workspace-monitor-dev path ~/Develop/noctalia-workspace-monitor`,
-  then `noctalia msg plugins enable maddingo/workspace-monitor`. Luau file
+  `noctalia msg plugins source add hyprland-display-config-dev path ~/Develop/hyprland-display-config`,
+  then `noctalia msg plugins enable maddingo/hyprland-display-config`. Luau file
   edits hot-reload; `plugin.toml` changes need `noctalia msg config-reload`.
 - **Driving without the UI**: `noctalia msg panel-toggle
-  maddingo/workspace-monitor:panel` to open the panel directly;
-  `noctalia msg plugin maddingo/workspace-monitor:writer_service all
+  maddingo/hyprland-display-config:panel` to open the panel directly;
+  `noctalia msg plugin maddingo/hyprland-display-config:writer_service all
   <event>` to fire specific IPC events at the writer service for scripted
   testing.
 - **Persistence path verification**: after a change, inspect the generated
