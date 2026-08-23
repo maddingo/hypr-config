@@ -121,6 +121,27 @@ local modalMatches = {
 }
 for _, m in ipairs(modalMatches) do hl.window_rule({ match = m, float = true }) end
 
+-- The generic float centering rule above centers against the full monitor
+-- box, not the bar-adjusted usable area, so a tall floating window (e.g. a
+-- Save As dialog) can land with its top edge behind the noctalia bar. Nudge
+-- it down if so. Excludes jetbrains-toolbox, which has its own handler above.
+hl.on("window.open", function(win)
+    if win.class == "jetbrains-toolbox" then return end
+    if not win.floating then return end
+
+    hl.timer(function()
+        local bar_bottom = 0
+        for _, layer in ipairs(hl.get_layers({ namespace = "noctalia-bar-default" })) do
+            bar_bottom = math.max(bar_bottom, layer.y + layer.h)
+        end
+        if bar_bottom == 0 then return end
+
+        if win.at.y < bar_bottom then
+            hl.dispatch(hl.dsp.window.move({ x = win.at.x, y = bar_bottom + 8, window = "address:" .. win.address }))
+        end
+    end, { timeout = 50, type = "oneshot" })
+end)
+
 -- Ignore maximize requests from all apps. You'll probably like this.
 local suppressMaximizeRule = hl.window_rule({
     name  = "suppress-maximize-events",
