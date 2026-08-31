@@ -15,13 +15,18 @@ hl.bind(mainMod .. " + J",           hl.dsp.layout("togglesplit"))
 hl.bind(mainMod .. " + L",           hl.dsp.exec_cmd(noctCall .. " session lock"))
 --hl.bind(mainMod .. " + ALT + C",     hl.dsp.exec_cmd(noctCall .. " sessionMenu toggle"))
 
+-- Cycle Windows Monocle Layout 
+hl.bind(mainMod .. " + Page_Down",   hl.dsp.window.cycle_next({ tiled = true }))
+hl.bind(mainMod .. " + Page_Up",     hl.dsp.window.cycle_next({ tiled = true }))
+
 -- Change focus
 hl.bind(mainMod .. " + Left",  hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + Right", hl.dsp.focus({ direction = "right" }))
 hl.bind(mainMod .. " + Up",    hl.dsp.focus({ direction = "up" }))
 hl.bind(mainMod .. " + Down",  hl.dsp.focus({ direction = "down" }))
 hl.bind("ALT + Tab",           hl.dsp.window.cycle_next())
-
+hl.bind(mainMod .. " + Tab",   hl.dsp.exec_cmd(noctCall .. "plugin maddingo/hypr-layout-switcher:poller all cycle"))
+	
 -- Move active window around current workspace
 hl.bind(mainMod .. " + SHIFT + Right", hl.dsp.window.move({ direction = "r" }))
 hl.bind(mainMod .. " + SHIFT + Left",  hl.dsp.window.move({ direction = "l" }))
