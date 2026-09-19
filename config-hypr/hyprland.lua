@@ -33,7 +33,7 @@ hl.monitor({
 
 -- External BenQ GL2250H on the left.
 hl.monitor({
-    output   = "HDMI-A-1",
+    output   = "desc:BNQ BenQ GL2250H 8AG02365019",
     mode     = "1920x1080@60",
     position = "0x0",
     scale    = 1,
@@ -42,7 +42,7 @@ hl.monitor({
 -- Laptop panel on the right. Scale 1.6 makes 2560x1600 a 1600x1000 logical
 -- area, so it starts where the BenQ ends at x=1920.
 hl.monitor({
-    output   = "eDP-1",
+    output   = "desc:BOE NE153QDM-NZ2",
     mode     = "preferred",
     position = "1920x0",
     scale    = 1.6,
@@ -74,7 +74,7 @@ hl.on("hyprland.start", function ()
    hl.exec_cmd("noctalia")
    hl.exec_cmd("nextcloud")
    hl.exec_cmd("/usr/lib/x86_64-linux-gnu/libexec/polkit-kde-authentication-agent-1")
-   hl.exec_cmd("/home/martin/opt/jetbrains-toolbox-3.3.1.75249/bin/jetbrains-toolbox.desktop")
+--   hl.exec_cmd("/home/martin/opt/jetbrains-toolbox-3.3.1.75249/bin/jetbrains-toolbox.desktop")
    hl.exec_cmd("gnome-keyring-daemon")
    hl.exec_cmd("kdeconnectd --replace")
 end)
@@ -227,6 +227,7 @@ hl.config({
 hl.config({
     scrolling = {
         fullscreen_on_one_column = true,
+	column_width = 0.95,
     },
 })
 
@@ -310,7 +311,7 @@ hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
 hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))
 hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))
 
-hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd(ipc .. "plugin maddingo/hyprland-layout:poller all cycle"))
+hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd(ipc .. "plugin maddingo/hypr-layout-switcher:poller all cycle"))
 
 -- Move active window around current workspace
 hl.bind(mainMod .. " + SHIFT + Right", hl.dsp.window.move({ direction = "r" }))
