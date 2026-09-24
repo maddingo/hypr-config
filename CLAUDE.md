@@ -8,18 +8,23 @@ Hyprland 0.56.2.
 `~/.config/hypr` is a **symlink** to `config-hypr/` in this repo. Editing files here edits
 the live config — there is no copy/install step. `hyprctl reload` applies changes.
 
-Three monitors: `eDP-1` 1920x1200@120 (laptop), plus two Lenovo P27h-20 2560x1440@59.95
-externals. Mixed refresh rates.
+Three monitors: `eDP-1` 1920x1200@120 (laptop), plus two Lenovo P27h-10 2560x1440@59.95
+externals. Mixed refresh rates. (The externals were P27h-20 units until 2026-09; older
+sections below still quote the old `V906YWA0` / `V907BZ2P` descriptions in examples.)
 
 **DisplayPort connector names are not stable here.** The externals have shown up as
 `DP-8`/`DP-10` and other numbers across reboots (MST/DP-hub enumeration order), which used
 to scramble the layout and workspace bindings. `monitors.conf` and `workspaces.conf` are
 therefore **hand-maintained and match on EDID description**, not connector name:
 
-- `monitor = desc:Lenovo Group Limited P27h-20 V906YWA0,...` — middle screen
-- `monitor = desc:Lenovo Group Limited P27h-20 V907BZ2P,...` — right screen
-- `eDP-1` has an *empty* description, so it must be matched by connector name (fine — an
-  internal panel's name is stable).
+- `desc:Lenovo Group Limited LEN P27h-10 0x30583854` — middle screen
+- `desc:Lenovo Group Limited LEN P27h-10 0x30463657` — right screen
+- `eDP-1` is matched by connector name in `workspaces.conf` (stable for an internal panel).
+  `monitors.conf` still matches it as `desc:` with an **empty** string, which was correct
+  when the panel reported no description. It now reports
+  `Lenovo Group Limited ATNA40HQ02-0`, and the empty-prefix match happens to still land on
+  it — verified by the origin, `x=274`. Fragile; prefer `eDP-1` if that line is ever
+  touched.
 
 Same model twice, so the **serial is the only disambiguator**; keep it in the desc string.
 Descriptions come from `hyprctl monitors -j | jq -r '.[] | "\(.name)\t\(.description)"'`.
@@ -28,6 +33,39 @@ Descriptions come from `hyprctl monitors -j | jq -r '.[] | "\(.name)\t\(.descrip
 description option — its flags are just `-m`, `-n`, `-v`), so it silently reintroduces the
 bug and wipes the comments. To change geometry, edit the two files by hand. If it gets run
 by accident: `git checkout config-hypr/monitors.conf config-hypr/workspaces.conf`.
+
+**There are exactly three workspaces, one per monitor** (1 middle/scrolling, 2 right, 3
+laptop), and that is enforced in two places, not one: `workspaces.conf` defines only 1-3,
+and `UserConfigs/UserKeybinds.conf` *unbinds* every key that would create a fourth —
+Super/Shift/Ctrl + 4..0 and the `movetoworkspace +1/-1` bracket binds. Hyprland has no
+"number of workspaces" setting; workspaces are created on demand by whatever dispatches to
+them, so removing the rules alone does nothing. Left deliberately bound, because they were
+tested and cannot create one: `workspace e+1/e-1` (Super+scroll, period, comma) visits only
+existing workspaces, and `m+1/m-1` (Super+Tab) only existing ones on the current monitor.
+
+OBS used to reopen the problem — `configs/WindowRules.conf` sent it to `workspace 10
+silent` — and that line has been removed. It lives in the update-overwritten tree, so
+re-apply if an update restores it. Otherwise only a manual `hyprctl dispatch workspace N`
+can still create one.
+
+**Waybar's button count is a separate knob with a trap in it.** It is
+`persistent-workspaces` in `config-waybar/ModulesWorkspaces`, under the module actually in
+use — `hyprland/workspaces#numbers`; the other six copies in that file belong to unused
+module variants. Two things to know:
+
+- The **integer form is per monitor and renumbers**. `"*": 3` does not mean "show
+  workspaces 1-3"; it means "3 workspaces on every monitor", numbered `monitorId*3 + 1…`.
+  With three monitors that produced 1,2,3 on eDP-1 (id 0), **4,5,6** on DP-9 (id 1) and
+  **7,8,9** on DP-12 (id 2), all shown on every bar because `all-outputs` is true — so
+  cutting 5 down to 3 made the bar show 1-9 rather than 1-3. The fix is the list form,
+  `"*": [1, 2, 3]`, which is literal. Verified by screenshotting the bars with
+  `grim -g "<x>,<y> 600x40"` and looking, which is the only honest check here.
+- `ModulesWorkspaces` is upstream-owned but **cannot be overridden from `UserModules`**,
+  even though `UserModules` is included last: waybar's include merge is **first-wins**, and
+  `ModulesWorkspaces` is included first. Edit it in place.
+
+Apply waybar config changes with `pkill -SIGUSR2 -x waybar` (`-x`, never `-f` — see the
+pkill warning further down).
 
 This design has since been validated against a *physical* port change, not just a reboot:
 on 2026-08-17 the dock was moved to a different USB-C port and the layout came up correct
