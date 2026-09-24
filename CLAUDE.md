@@ -42,12 +42,25 @@ with zero intervention. See "Display problems" below for why the names drift at 
 Source order is in `hyprland.conf` (`configs/` then `UserConfigs/` for each pair). This
 matters for tags: a `tag +foo` rule must be sourced *before* any `match:tag foo` rule.
 
-Two local changes currently live in the **non**-update-safe `configs/` tree and will need
-re-applying if an upstream update reverts them:
+One local change currently lives in the **non**-update-safe `configs/` tree and will need
+re-applying if an upstream update reverts it:
 
-- `configs/SystemSettings.conf` — `on_focus_under_fullscreen = 0` (was `1`)
 - `configs/WindowRules.conf:36` — added `?` so bare class `microsoft-edge` matches the
   `browser` tag, like every other browser rule in that file
+
+`configs/SystemSettings.conf` also still carries `on_focus_under_fullscreen = 0`, but that
+line no longer decides anything: `UserConfigs/UserSettings.conf` sets it back to `1` and is
+sourced later. Net effect is `1`, which is upstream's own value — the setting round-tripped.
+Do not "fix" the `0`, and do not trust the `# Was 1, which broke fullscreen` comment above
+it; both are stale. See the Edge tooltip section below for why `1` is correct again.
+
+The four layout blocks (`dwindle`, `master`, `scrolling`, `monocle`) were **moved** out of
+`configs/SystemSettings.conf` into `UserConfigs/UserSettings.conf`. That move is
+self-healing: if an update reinstates the upstream blocks in `configs/`, `UserSettings.conf`
+is still sourced later and wins, so the only consequence is that both files define them.
+Layout settings therefore go in `UserSettings.conf` now — including
+`scrolling:column_width`, the default width of new columns. `general:layout` deliberately
+stayed behind in `configs/SystemSettings.conf`, since that block is not layout-specific.
 
 ## Hyprland 0.56.2 windowrule syntax
 
@@ -194,10 +207,52 @@ Two distinct bugs came from this:
    floats them (keeping them out of the layout) and re-positions them at the cursor.
 2. **Fullscreen dropping out immediately.** With `on_focus_under_fullscreen = 1`, a tooltip
    inherited the fullscreen state on focus and destroyed it on close, so Super+F on the
-   Outlook web app bounced straight back to windowed. Fixed by setting it to `0`.
+   Outlook web app bounced straight back to windowed. Originally "fixed" by setting it to
+   `0` — but that was the wrong fix, and it has been reverted to `1` in
+   `UserConfigs/UserSettings.conf`. The takeover happens **on focus**, and the `edge_tooltip`
+   rule added for bug 1 already carries `no_initial_focus on`, which denies focus to exactly
+   this toplevel. No focus, no takeover. Both changes landed in one commit (`e54499e`), so
+   `1` was never retested with the rule in place; it was reverted on the strength of a
+   problem the rule had already solved. Verified 2026-09-24: Outlook web holds fullscreen
+   while tooltips spawn.
 
 The tooltip rule's `match:class ^$, match:title ^$` selector is deliberately isolated on one
 line, because it matches *any* empty-class/empty-title toplevel, not just Edge's.
+
+## Known: an app starts but its window is nowhere on screen
+
+Symptom: the process is alive, no window is visible, and nothing looks wrong. Hit while
+launching OAS Buddy (`.deb`-installed, `/opt/oas-buddy/bin/`) from a fullscreen kitty.
+
+Cause was not the app. Hyprland opens a new tiled window **behind** an existing fullscreen
+window on the same workspace, and with `on_focus_under_fullscreen = 0` nothing ever brought
+it forward. `hyprctl clients` showed it `mapped: 1`, `hidden: 0`, correctly sized and tiled
+on the active workspace, but `visible: 0`. Setting that option back to `1` fixed it — the
+new window now takes the fullscreen slot on focus.
+
+Three things worth keeping from the diagnosis:
+
+- **A lone `visible: 0` proves nothing. The comparison across all windows is the
+  diagnostic.** Sibling *native-Wayland* windows on that workspace also reported
+  `visible: 0` and `acceptsInput: 0`, which is the compositor describing occlusion — not
+  something the app failed to do. Read in isolation those flags look exactly like an
+  app-side focus bug, which is the wrong trail and costs real time.
+- **X11 is the wrong authority under Wayland.** For the same XWayland window, `xwininfo`
+  reported `Map State: IsViewable` while it was completely covered, and gave
+  XWayland-internal coordinates (`965,621`) that were not the compositor's real ones
+  (`1239,621`). Ask `hyprctl`; fall back to `xprop` only when there is no compositor to ask.
+- **The option was renamed.** `misc:new_window_takes_over_fullscreen` does not exist in
+  0.56.2; it is `misc:on_focus_under_fullscreen`. Current names are in `hl.meta.lua` — grep
+  there rather than guess. Unlike the windowrule parser, which accepts bad values silently,
+  `hyprctl getoption` tells the three cases apart and is worth trusting: a wrong name gives
+  `no such option`, a real one that nothing has set gives `set: false`, and a real one in
+  effect gives `set: true` with its value. So "did my override actually land?" is one
+  command, not a guess.
+
+A scripted version of the whole sweep (session, process, X11 view, compositor view,
+all-window comparison, the options that hide a new window) lives outside this repo, in
+`oas-buddy/tools/diagnose-window.sh`. It is read-only and app-agnostic apart from two
+constants at the top.
 
 ## Known: JetBrains Toolbox places its popup off-screen
 

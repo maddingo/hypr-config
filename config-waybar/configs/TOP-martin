@@ -30,7 +30,6 @@
 	"custom/separator#blank", 
 	"hyprland/workspaces#numbers",
 	"custom/separator#blank_2",
-	"mpris",
 	"hyprland/window",
 	],
 "modules-center": [
