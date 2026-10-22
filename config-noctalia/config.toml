@@ -80,6 +80,7 @@ enabled = [
 
 [shell]
 avatar_path = "/home/martin/Pictures/kopf_nobg.png"
+polkit_agent = true
 
     [shell.panel]
     transparency_mode = "glass"

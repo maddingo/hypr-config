@@ -19,3 +19,7 @@ local ok, noctalia = pcall(require, "noctalia")
 if ok then
     noctalia.apply_theme()
 end
+
+
+-- For Noctalia Color templates
+require("noctalia").apply_theme()
